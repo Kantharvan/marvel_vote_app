@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Lock files
+package-lock.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage and reports
+coverage
+*.lcov
+
+# Build outputs
+dist
+build
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE/editor
+.DS_Store
+.idea
+*.swp
+*.swo
+*.orig
+.vscode
+
+# Misc
+.nyc_output
