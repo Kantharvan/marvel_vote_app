@@ -1,8 +1,0 @@
-{
-  "name": "marvel-vote-app",
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": { "dev": "vite dev", "build": "vite build", "preview": "vite preview" },
-  "devDependencies": { "@sveltejs/kit": "latest", "svelte": "latest", "vite": "latest" },
-  "dependencies": { "firebase": "^10.7.1", "qrcode": "^1.5.3" }
-}
