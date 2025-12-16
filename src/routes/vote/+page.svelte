@@ -3,6 +3,14 @@
   import { doc, onSnapshot, setDoc } from 'firebase/firestore';
   import { onMount } from 'svelte';
 
+  /**
+   * @typedef {object} ActiveAward
+   * @property {string} award
+   * @property {string[]} nominees
+   * @property {number} ts
+   */
+
+  /** @type {ActiveAward | null} */
   let activeAward = null;
   let deviceId = '';
   let voteStatus = ''; // 'idle', 'voting', 'voted'
@@ -19,7 +27,7 @@
     // Real-time listener for active award
     const unsub = onSnapshot(doc(db, 'config', 'active'), (docSnap) => {
       if (docSnap.exists()) {
-        activeAward = docSnap.data();
+        activeAward = /** @type {ActiveAward} */ (docSnap.data());
         voteStatus = 'idle'; // Reset vote status when award changes
       } else {
         activeAward = null;
@@ -30,9 +38,14 @@
     return () => unsub(); // Unsubscribe on component destroy
   });
 
-  async function castVote(nominee) {
+  /** @type {string} */
+  let votedNominee = ''; // To display the chosen nominee on the thank you screen
+
+  async function castVote(/** @type {string} */ nominee) {
     if (voteStatus === 'voted') {
-      alert("Halt! You've already cast your vote for this mission, hero! One vote per device, as per protocol.");
+      // If already voted, just show the thank you screen
+      votedNominee = nominee; // Set voted nominee
+      voteStatus = 'voted';
       return;
     }
 
@@ -72,23 +85,27 @@
     --button-hover-bg: #c00;
   }
   .container {
-    max-width: 800px;
+    max-width: 900px; /* Slightly wider container */
     margin: 40px auto;
-    padding: 20px;
-    background-color: var(--bg-color);
+    padding: 30px; /* More padding */
+    background-color: rgba(30, 30, 30, 0.9); /* Slightly transparent dark background */
     color: var(--text-color);
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    font-family: 'Arial', sans-serif;
+    border-radius: 12px; /* More rounded corners */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4); /* Deeper shadow */
+    font-family: 'Roboto', sans-serif; /* A more modern font */
     text-align: center;
+    border: 1px solid var(--marvel-gold); /* Subtle gold border */
   }
   h1 {
+    font-size: 2.8em; /* Larger heading */
     color: var(--marvel-gold);
-    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Text shadow for pop */
+    margin-bottom: 25px;
   }
   h2 {
+    font-size: 1.8em; /* Larger subheading */
     color: var(--text-color);
-    margin-bottom: 25px;
+    margin-bottom: 30px;
   }
   .nominee-list button {
     display: block;
@@ -123,25 +140,160 @@
     color: var(--marvel-gold);
     margin-top: 50px;
   }
-  .thank-you {
-    font-size: 1.8em;
-    color: var(--marvel-gold);
+  .nominee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+  }
+
+  .nominee-card {
+    background-color: var(--bg-color);
+    border: 2px solid var(--marvel-red);
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .nominee-card:hover:not(.disabled) {
+    transform: translateY(-8px) scale(1.03); /* More pronounced lift */
+    border-color: var(--marvel-gold);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6); /* Stronger shadow */
+  }
+
+  .nominee-card.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    border-color: #666; /* Slightly lighter border */
+    background-color: #2a2a2a; /* Slightly darker disabled background */
+    transform: none; /* No lift for disabled cards */
+    box-shadow: none;
+  }
+
+
+  .nominee-card-content h3 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.1em;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .thank-you-screen {
+    background-color: var(--bg-color);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     margin-top: 50px;
+    text-align: center;
+    border: 2px solid var(--marvel-gold);
+  }
+
+  .thank-you-screen h1 {
+    color: var(--marvel-gold);
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .thank-you-screen p {
+    font-size: 1.2em;
+    color: var(--text-color);
+    margin-bottom: 10px;
+  }
+
+  .thank-you-screen p strong {
+    color: var(--marvel-red);
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .container {
+      margin: 20px auto;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    h1 {
+      font-size: 2em; /* Smaller heading for mobile */
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 1.4em; /* Smaller subheading for mobile */
+      margin-bottom: 25px;
+    }
+
+    .nominee-grid {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Smaller cards */
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .nominee-card {
+      padding: 10px;
+    }
+
+    .nominee-card-content h3 {
+      font-size: 0.9em; /* Smaller nominee name */
+    }
+
+    .thank-you-screen {
+      padding: 25px;
+    }
+
+    .thank-you-screen h1 {
+      font-size: 1.8em;
+    }
+
+    .thank-you-screen p {
+      font-size: 1em;
+    }
+
+    .no-active-voting {
+      font-size: 1.2em;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .nominee-grid {
+      grid-template-columns: 1fr; /* Stack cards vertically on very small screens */
+    }
   }
 </style>
 
 <div class="container">
   {#if activeAward}
     {#if voteStatus === 'voted'}
-      <h1 class="thank-you">Thank you for voting for "{activeAward.award}"!</h1>
+      <div class="thank-you-screen">
+        <h1>Mission Accomplished!</h1>
+        <p>Your vote for **{votedNominee}** in the "{activeAward.award}" is secure, hero!</p>
+        <p>Thank you for participating.</p>
+      </div>
     {:else}
       <h1>Vote for: {activeAward.award}</h1>
-      <h2>Select your nominee:</h2>
-      <div class="nominee-list">
+      <h2>Choose your champion:</h2>
+      <div class="nominee-grid">
         {#each activeAward.nominees as nominee}
-          <button on:click={() => castVote(nominee)} disabled={voteStatus === 'voting'}>
-            {nominee}
-          </button>
+          <div
+            class="nominee-card"
+            class:disabled={voteStatus === 'voting'}
+            on:click={() => castVote(nominee)}
+            role="button"
+            tabindex="0"
+          >
+            <div class="nominee-card-content">
+              <h3>{nominee}</h3>
+            </div>
+          </div>
         {/each}
       </div>
     {/if}
