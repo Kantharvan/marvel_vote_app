@@ -1,40 +1,27 @@
-# Dependencies
-node_modules/
+node_modules
 
-# Lock files
-package-lock.json
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Runtime data
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage and reports
-coverage
-*.lcov
-
-# Build outputs
-dist
-build
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# IDE/editor
+# OS
 .DS_Store
-.idea
-*.swp
-*.swo
-*.orig
-.vscode
+Thumbs.db
 
-# Misc
-.nyc_output
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Firebase
+firebase-debug.log
+.firebaserc.local

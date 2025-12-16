@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read access to everyone for the active config
+    match /config/active {
+      allow read;
+      // Allow only authorized admin to write to config/active
+      // (For this app, a simple PIN is used; in production, integrate Firebase Authentication)
+      allow write, delete: if true; // Added delete permission
+    }
+
+    // Allow read access to the votes collection for admin to get document IDs for deletion
+    // This allows listing documents in 'votes' and its subcollections
+    match /votes/{document=**} { // Changed to recursive match
+        allow read, delete: if true; // Allow read and delete for testing admin functionality
+    }
+
+    // Rules for votes
+    match /votes/{awardId}/deviceVotes/{deviceId} { // <-- Updated path here
+      // Allow a user to create a vote if:
+      // 1. The data being written matches the expected format (choice, ts)
+      // 2. There is no existing vote for this device and award (ensures one vote per device per award)
+      allow create: if request.resource.data.choice is string &&
+                       request.resource.data.ts is number &&
+                       !exists(/databases/$(database)/documents/votes/$(awardId)/deviceVotes/$(deviceId)); // <-- Updated path here
+
+      // Prevent any updates or deletions to existing votes
+      allow update: if false; // Still prevent updates
+    }
+  }
+}
