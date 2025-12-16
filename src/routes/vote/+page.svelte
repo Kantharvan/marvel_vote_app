@@ -2,12 +2,14 @@
   import { db } from '$lib/firebase';
   import { doc, onSnapshot, setDoc } from 'firebase/firestore';
   import { onMount } from 'svelte';
+  import { awardsDetails } from '../../data/teams';
 
   /**
    * @typedef {object} ActiveAward
    * @property {string} award
    * @property {string[]} nominees
    * @property {number} ts
+   * @property {string} [team] // Optional team property
    */
 
   /** @type {ActiveAward | null} */
@@ -135,6 +137,15 @@
     cursor: not-allowed;
     opacity: 0.7;
   }
+  .award-description {
+    font-size: 1.1em;
+    color: #bbb;
+    margin-bottom: 20px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.4;
+  }
   .no-active-voting {
     font-size: 1.5em;
     color: var(--marvel-gold);
@@ -227,10 +238,17 @@
       margin-bottom: 20px;
     }
 
-    h2 {
-      font-size: 1.4em; /* Smaller subheading for mobile */
-      margin-bottom: 25px;
-    }
+  h2 {
+    color: var(--text-color);
+    margin-bottom: 30px;
+  }
+
+  h3.active-team {
+    color: var(--marvel-gold); /* Styling for team name */
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+  }
 
     .nominee-grid {
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Smaller cards */
@@ -280,7 +298,10 @@
       </div>
     {:else}
       <h1>Vote for: {activeAward.award}</h1>
-      <h2>Choose your champion:</h2>
+      {#if awardsDetails[/** @type {keyof typeof awardsDetails} */ (activeAward.award)]}
+        <p class="award-description">{awardsDetails[/** @type {keyof typeof awardsDetails} */ (activeAward.award)].description}</p>
+      {/if}
+      <h2>Choose your champion: {#if activeAward.team}from {activeAward.team}{/if}</h2>
       <div class="nominee-grid">
         {#each activeAward.nominees as nominee}
           <div

@@ -28,8 +28,10 @@
     'Best Team Award'
   ];
 
+  const ADMIN_PIN = '1100'; // Define PIN here
+
   function login() {
-    if (pin === '1234') { // Hardcoded PIN
+    if (pin === ADMIN_PIN) { // Use constant PIN
       loggedIn = true;
     } else {
       alert('Incorrect PIN');
@@ -37,9 +39,29 @@
   }
 
   function handleTeamChange() {
-    if (selectedTeam && teams[selectedTeam]) {
+    // This function is explicitly called when selectedTeam changes.
+    // Populate nominees if a team is selected and it's not the Best Team Award.
+    // If Best Team Award is selected, its reactive block will handle nomineesText.
+    if (selectedAward !== 'Best Team Award' && selectedTeam && teams[selectedTeam]) {
+      nomineesText = teams[selectedTeam].join('\n');
+    } else if (selectedAward !== 'Best Team Award') {
+      nomineesText = '';
+    }
+    // If Best Team Award is selected, this function won't change nomineesText
+    // because the reactive block takes precedence for Best Team Award.
+  }
+
+  // Reactive block to handle changes in selectedAward and auto-populate nominees
+  $: {
+    if (selectedAward === 'Best Team Award') {
+      // For 'Best Team Award', nominees are all team names
+      nomineesText = Object.keys(teams).filter(teamName => teamName !== 'All').join('\n');
+      selectedTeam = ''; // Clear selectedTeam as it's not relevant here
+    } else if (selectedTeam && teams[selectedTeam]) {
+      // For other awards, if a team is selected, populate with its members
       nomineesText = teams[selectedTeam].join('\n');
     } else {
+      // Otherwise, clear nominees (e.g., if award changed from Best Team Award, or team unselected)
       nomineesText = '';
     }
   }
@@ -77,7 +99,9 @@
     const activeConfig = {
       award: selectedAward,
       nominees: nominees,
-      ts: Date.now()
+      ts: Date.now(),
+      // Include selectedTeam if one was chosen, otherwise it defaults to undefined
+      ...(selectedTeam && { team: selectedTeam })
     };
 
     try {

@@ -21,7 +21,7 @@
   let loading = true;
 
   // PIN for admin login (hardcoded)
-  const ADMIN_PIN = '1234';
+  const ADMIN_PIN = '1100';
 
   function login() {
     if (pin === ADMIN_PIN) {
